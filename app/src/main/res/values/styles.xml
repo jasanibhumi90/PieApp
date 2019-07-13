@@ -1,0 +1,30 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+  <!--  <style name="styleTextBold">
+        <item name="android:fontFamily">@font/bo</item>
+    </style>-->
+
+    <style name="styleTextSemiBold">
+        <item name="android:fontFamily">@font/semibold</item>
+    </style>
+
+    <style name="styleTextMedium">
+        <item name="android:fontFamily">@font/medium</item>
+    </style>
+
+    <style name="styleTextRegular">
+        <item name="android:fontFamily">@font/reguler</item>
+    </style>
+    <style name="tab" parent="TextAppearance.Design.Tab">
+        <item name="android:textSize">20dp</item>
+        <item name="android:fontFamily">@font/bold</item>
+    </style>
+</resources>
