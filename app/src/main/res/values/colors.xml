@@ -3,10 +3,13 @@
     <color name="colorPrimary">#097BDE</color>
     <color name="colorPrimaryDark">#097BDE</color>
     <color name="colorAccent">#097BDE</color>
-
+    <!--Main Gradient colors-->
+    <color name="colorMainGradient1">#4c35b6</color>
+    <color name="colorMainCenterGradient1">#7740C1</color>
+    <color name="colorMainGradient2">#b562d1</color>
     <color name="colorBlack">#000000</color>
     <color name="colorWhite">#ffffff</color>
-
+    <color name="colorInvitesBg">#D4D1E5</color>
     <color name="colorRed">#EA4E4F</color>
     <color name="colorDarkGreen">#20bb4f</color>
     <color name="colorTextDark">#1C2041</color>

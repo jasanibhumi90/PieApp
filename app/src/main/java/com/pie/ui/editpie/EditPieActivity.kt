@@ -1,4 +1,4 @@
-package com.pie.ui.createpie
+package com.pie.ui.editpie
 
 import android.Manifest
 import android.app.Activity
@@ -35,10 +35,12 @@ import com.pie.ui.trim.ThirdPartyIntentsUtil
 import com.pie.ui.trim.TrimmerActivity
 import com.pie.utils.AppConstant.Companion.ARG_DATA
 import com.pie.utils.AppConstant.Companion.ARG_INPUT_VIDEO
+import com.pie.utils.AppConstant.Companion.ARG_PIE_DATA
 import com.pie.utils.AppGlobal
 import com.pie.utils.AppLogger
 import com.pie.utils.PermissionUtils
 import com.theartofdev.edmodo.cropper.CropImage
+
 import kotlinx.android.synthetic.main.activity_create_pie.*
 import kotlinx.android.synthetic.main.activity_forgot_pass.ivBack
 import kotlinx.android.synthetic.main.listitem_image.view.*
@@ -47,14 +49,17 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import rx.Subscriber
 import rx.android.schedulers.AndroidSchedulers
+
 import java.io.File
 import java.util.HashMap
 import kotlin.collections.ArrayList
 import kotlin.collections.set
 
 
-class CreatePieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallback,
+class EditPieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallback,
     PermissionUtils.OnPermissionResponse, VideoPickerCallback {
+    lateinit var pieData: PostModel
+
     companion object {
         private const val REQUEST_VIDEO_TRIMMER = 1
         private const val REQUEST_STORAGE_READ_ACCESS_PERMISSION = 2
@@ -79,7 +84,7 @@ class CreatePieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallb
     private var imagePicker: ImagePicker? = null
     private var cameraPicker: CameraImagePicker? = null
     var arFiles: ArrayList<String> = ArrayList()
-    var arVideoFiles: ArrayList<String> = ArrayList()
+    var arRemoveFiles: ArrayList<String> = ArrayList()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_pie)
@@ -91,6 +96,25 @@ class CreatePieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallb
         ivRemoveVideo.setOnClickListener(this)
         permissionUtils = PermissionUtils(this)
         GiraffeCompressor.init(this)
+        if (intent.hasExtra(ARG_PIE_DATA)) {
+            pieData = intent?.getSerializableExtra(ARG_PIE_DATA) as PostModel
+            setData()
+        }
+    }
+
+    fun setData() {
+        if (::pieData.isInitialized) {
+            pieData.let {
+                etPie.setText(it.pies_text)
+                if (pieData.pies_media_url.size != 0) {
+                    for (i in 0 until pieData.pies_media_url.size) {
+                        addView(pieData.pies_media_url[i], false)
+                    }
+                }
+
+            }
+
+        }
     }
 
     override fun onClick(v: View?) {
@@ -116,9 +140,10 @@ class CreatePieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallb
             }
             R.id.ivRemove -> {
                 val pView = v.parent as View
-                arFiles.removeAt(llImages.indexOfChild(pView))
+                arRemoveFiles.add(pieData.pies_media_url[llImages.indexOfChild(pView)])
                 llImages.removeView(pView)
-                AppLogger.e("tag", "arFiles++" + arFiles.size)
+
+                AppLogger.e("tag", "arRemoveFiles++" + arRemoveFiles.size)
             }
             R.id.ivRemoveVideo -> {
                 rlVideo.visibility = View.GONE
@@ -250,7 +275,7 @@ class CreatePieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallb
                         result.uri.path?.let {
 
                             pickerPath = it
-                            addView(pickerPath)
+                            addView(pickerPath, true)
 
                         }
                     }
@@ -292,26 +317,20 @@ class CreatePieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallb
                 }
                 REQUEST_VIDEO_TRIMMER -> {
                     val uri = data!!.data
-                   /* if (uri != null && checkIfUriCanBeUsedForVideo(uri)) {
+                    if (uri != null && checkIfUriCanBeUsedForVideo(uri)) {
                         startTrimActivity(uri)
                     } else {
                         Toast.makeText(
-                            this@CreatePieActivity,
+                            this@EditPieActivity,
                             R.string.toast_cannot_retrieve_selected_video,
                             Toast.LENGTH_SHORT
                         )
                             .show()
-                    }*/
-                    videoPath=uri.path
-                    val bitmap2 = ThumbnailUtils.createVideoThumbnail(
-                        uri?.getPath(),
-                        MediaStore.Images.Thumbnails.MINI_KIND
-                    )
-                    ivPreviewVideo.setImageBitmap(bitmap2)
+                    }
                 }
                 201 -> {
                     loaderDialog.run()
-                    val trimmedUri: Uri? = data?.getParcelableExtra(CreatePieActivity.EXTRA_INPUT_URI)
+                    val trimmedUri: Uri? = data?.getParcelableExtra(EditPieActivity.EXTRA_INPUT_URI)
                     videoPath = trimmedUri?.path.toString()
                     val bitmap2 = ThumbnailUtils.createVideoThumbnail(
                         trimmedUri?.getPath(),
@@ -333,12 +352,12 @@ class CreatePieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallb
                         .subscribe(object : Subscriber<GiraffeCompressor.Result>() {
                             override fun onCompleted() {
                                 loaderDialog.dismiss()
-                                videoPath=compressVideoFile.absolutePath
+                                videoPath = compressVideoFile.absolutePath
                             }
 
                             override fun onError(e: Throwable) {
                                 e.printStackTrace()
-                                Log.e("tag","error"+e.printStackTrace())
+                                Log.e("tag", "error" + e.printStackTrace())
                                 loaderDialog.dismiss()
                             }
 
@@ -357,11 +376,13 @@ class CreatePieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallb
         AppLogger.e("tag", "error" + p0)
     }
 
-    fun addView(pickerPath: String) {
+    fun addView(pickerPath: String, isNew: Boolean) {
 
         val linearLayout = LayoutInflater.from(llImages.context)
             .inflate(R.layout.listitem_image, llImages, false) as RelativeLayout
-        arFiles.add(pickerPath)
+        if (isNew) {
+            arFiles.add(pickerPath)
+        }
         linearLayout.ivRemove.setOnClickListener(this)
         Glide.with(this).load(pickerPath).into(linearLayout.ivImage)
         llImages.addView(linearLayout, 0)
@@ -454,14 +475,20 @@ class CreatePieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallb
             val service = HashMap<String, Any>()
             val data = HashMap<String, Any>()
             val auth = HashMap<String, Any>()
+            data[getString(R.string.param_pie_id)] = pieData.id
             data[getString(R.string.param_pies_text)] = etPie.text.toString()
             data[getString(R.string.param_pies_media)] = imagePaths
+            if (videoPath.isEmpty()) {
+                data[getString(R.string.param_pies_type)] = "video"
+            } else {
+                data[getString(R.string.param_pies_type)] = "image"
+            }
 
             auth[getString(R.string.param_id)] = pref.getLoginData()?.user_id.toString()
             auth[getString(R.string.param_token)] = pref.getToken()
 
             request[getString(R.string.data)] = data
-            service[getString(R.string.service)] = getString(R.string.service_post_pies)
+            service[getString(R.string.service)] = getString(R.string.service_edit_pies)
             service[getString(R.string.request)] = request
             service[getString(R.string.auth)] = auth
             callApi(requestInterface.createPie(service), true)
@@ -572,7 +599,7 @@ class CreatePieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallb
             builder.setMessage(rationale)
             builder.setPositiveButton(android.R.string.ok) { _, _ ->
                 ActivityCompat.requestPermissions(
-                    this@CreatePieActivity,
+                    this@EditPieActivity,
                     arrayOf(permission),
                     requestCode
                 )

@@ -60,3 +60,12 @@ data class PostModel(
 
 ) : Serializable
 
+data class ReportModel(
+    var id: String="",
+    var report_name: String=""
+
+
+
+
+) : Serializable
+

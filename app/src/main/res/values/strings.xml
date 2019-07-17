@@ -86,7 +86,8 @@
     <string name="error_empty_re_enter_password">Please Enter Re-Enter Password</string>
     <string name="error_empty_code">Please Enter Verification Code</string>
     <string name="error_valid_code">Please Enter Valid Verification Code</string>
-
+    <string name="error_reason">Please Select reason</string>
+    <string name="error_desc">Please Enter Description</string>
 
 
 
@@ -162,6 +163,7 @@
     <string name="you_are_all_set">You\'re all set</string>
     <string name="take_a_minute">Take a minute to upload a profile photo &amp; enter few details about you.</string>
     <string name="set_your_username">Set your Username</string>
+    <string name="birthdate">Birthdate</string>
     <string name="you_are">You\'re</string>
     <string name="male">Male</string>
     <string name="female">Female</string>
@@ -178,11 +180,11 @@
     <string name="follow">Follow</string>
     <string name="piemate">Piemate</string>
 
-
+    <string name="toast_cannot_retrieve_selected_video">Cannot retrieve selected video</string>
     <!--home-->
     <string name="create_a_pie_and_Be_loved">Create a pie and be loved!</string>
-    
-    
+    <string name="permission_read_storage_rationale">Storage read permission is needed to pick files</string>
+    <string name="permission_title_rationale">Permission needed</string>
     <!--profile-->
     <string name="editprofile">Edit Profile</string>
     <string name="piemates">Piemates</string>
@@ -191,4 +193,20 @@
     <!--create pie-->
     <string name="create_or_pie_something">write or pie something....</string>
     <string name="pie_now">Pie Now</string>
+
+    <string name="video_saved_at">Video saves at : $%1s</string>
+    <string name="pick_a_video">Select or record a a video below to try it out:</string>
+    <string name="short_seconds">sec</string>
+
+    <!--report post-->
+    <string name="report_post">Report a Post</string>
+    <string name="why_are_you_reporting_this_post">Why are you reporting this post?</string>
+    <string name="description">Description</string>
+    <string name="write_description_here">Write Description here...</string>
+
+
+    <!--menu-->
+    <string name="menu_editpost">Edit Post</string>
+    <string name="menu_deletepost">Delete Post</string>
+    <string name="menu_reportpost">Report Post</string>
 </resources>

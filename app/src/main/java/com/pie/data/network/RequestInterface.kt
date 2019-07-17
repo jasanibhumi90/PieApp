@@ -48,6 +48,13 @@ interface RequestInterface {
     @POST("WebService/service")
     fun getPies(@Body map: HashMap<String, Any>): Observable<BaseResponse<ArrayList<PostModel>>>
 
+
+    @POST("WebService/service")
+    fun getReportss(@Body map: HashMap<String, Any>): Observable<BaseResponse<ArrayList<ReportModel>>>
+
+    @POST("WebService/service")
+    fun postReport(@Body map: HashMap<String, Any>): Observable<BaseResponse<Any>>
+
     //endregion
     /*
     //region editProfile

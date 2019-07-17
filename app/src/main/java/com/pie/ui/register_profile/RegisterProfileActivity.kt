@@ -1,11 +1,13 @@
 package com.pie.ui.register_profile
 
 import android.app.Activity
+import android.app.DatePickerDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.DatePicker
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -44,6 +46,7 @@ class RegisterProfileActivity : BaseActivity(), View.OnClickListener, ImagePicke
     PermissionUtils.OnPermissionResponse, FilePickerCallback {
     private var uploadPath: String = ""
     private var vUserName: String = ""
+    private var vBirthDate: String = ""
     private var pickerPath: String = ""
     private var imagePicker: ImagePicker? = null
     private var cameraPicker: CameraImagePicker? = null
@@ -56,6 +59,7 @@ class RegisterProfileActivity : BaseActivity(), View.OnClickListener, ImagePicke
         tvMale.setOnClickListener(this)
         tvFemale.setOnClickListener(this)
         ivProPic.setOnClickListener(this)
+        etBirthdate.setOnClickListener(this)
         permissionUtils= PermissionUtils(this)
         if (intent.hasExtra(AppConstant.ARG_DATA)) {
             data = intent.getSerializableExtra(AppConstant.ARG_DATA) as HashMap<String, String>
@@ -215,9 +219,28 @@ class RegisterProfileActivity : BaseActivity(), View.OnClickListener, ImagePicke
                     isMale = false
                 }
             }
-        }
 
+            R.id.etBirthdate -> {
+                val calendar = Calendar.getInstance()
+                  val yy = calendar.get(Calendar.YEAR)
+                val mm = calendar.get(Calendar.MONTH)
+                val dd = calendar.get(Calendar.DAY_OF_MONTH)
+                val mdiDialog = DatePickerDialog(this, object : DatePickerDialog.OnDateSetListener {
+                    override fun onDateSet(view: DatePicker, year: Int, monthOfYear: Int, dayOfMonth: Int) {
+                        vBirthDate =year.toString() + "-" + String.format("%02d", monthOfYear) + "-" + String.format("%02d", dayOfMonth)
+                        etBirthdate.text=vBirthDate
+                       /* Toast.makeText(
+                            getApplicationContext(),
+                            year.toString() + " " + monthOfYear.toString() + " " + dayOfMonth.toString(),
+                            Toast.LENGTH_LONG
+                        ).show()*/
+                    }
+                }, yy, mm, dd)
+                mdiDialog.show()
+            }
+        }
     }
+
 
     private fun uploadPic(path: String) {
         if (AppGlobal.isNetworkConnected(this)) run {
@@ -271,6 +294,9 @@ class RegisterProfileActivity : BaseActivity(), View.OnClickListener, ImagePicke
 
     }
 
+
+
+
     private fun registerApi() {
         if (AppGlobal.isNetworkConnected(this)) run {
 
@@ -279,10 +305,12 @@ class RegisterProfileActivity : BaseActivity(), View.OnClickListener, ImagePicke
             val service = HashMap<String, Any>()
             data[getString(R.string.param_user_name)] = vUserName
             data[getString(R.string.param_profile_pic)] = uploadPath
+            data[getString(R.string.param_birth_date)] = vBirthDate
             if (isMale) {
                 data[getString(R.string.param_gender)] = "M"
             } else {
                 data[getString(R.string.param_gender)] = "F"
+
             }
             request[getString(R.string.data)] = data
             service[getString(R.string.service)] = getString(R.string.service_signup)
