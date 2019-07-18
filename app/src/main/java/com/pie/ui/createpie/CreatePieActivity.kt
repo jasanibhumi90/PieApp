@@ -292,7 +292,7 @@ class CreatePieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallb
                 }
                 REQUEST_VIDEO_TRIMMER -> {
                     val uri = data!!.data
-                   /* if (uri != null && checkIfUriCanBeUsedForVideo(uri)) {
+                    if (uri != null && checkIfUriCanBeUsedForVideo(uri)) {
                         startTrimActivity(uri)
                     } else {
                         Toast.makeText(
@@ -301,13 +301,7 @@ class CreatePieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallb
                             Toast.LENGTH_SHORT
                         )
                             .show()
-                    }*/
-                    videoPath=uri.path
-                    val bitmap2 = ThumbnailUtils.createVideoThumbnail(
-                        uri?.getPath(),
-                        MediaStore.Images.Thumbnails.MINI_KIND
-                    )
-                    ivPreviewVideo.setImageBitmap(bitmap2)
+                    }
                 }
                 201 -> {
                     loaderDialog.run()

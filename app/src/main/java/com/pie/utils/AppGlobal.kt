@@ -36,7 +36,16 @@ class AppGlobal {
         val DATEFORMAT = "yyyy-MM-dd HH:mm:ss"
         val TIMEZONE = "AST"
         val tag: String = this::class.java.canonicalName!!
-
+        private fun containsURL(content:String):Boolean {
+            val REGEX = "\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]"
+            val p = Pattern.compile(REGEX, Pattern.CASE_INSENSITIVE)
+            val m = p.matcher(content)
+            if (m.find())
+            {
+                return true
+            }
+            return false
+        }
         fun isEmailValid(email: String): Boolean {
             val pattern: Pattern
             val matcher: Matcher

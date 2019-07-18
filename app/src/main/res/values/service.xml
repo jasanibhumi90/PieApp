@@ -57,6 +57,7 @@
     <string name="param_pie_id">pie_id</string>
     <string name="param_why_reporting">why_reporting</string>
     <string name="param_reporting_text">reporting_text</string>
+    <string name="param_remove_medias">remove_medias</string>
     <string name="param_pies_media">pies_media</string>
     <string name="param_pies_type">pies_type</string>
     <string name="param_id">id</string>

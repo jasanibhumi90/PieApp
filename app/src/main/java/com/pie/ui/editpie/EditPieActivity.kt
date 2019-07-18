@@ -8,6 +8,7 @@ import android.media.ThumbnailUtils
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -108,7 +109,7 @@ class EditPieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallbac
                 etPie.setText(it.pies_text)
                 if (pieData.pies_media_url.size != 0) {
                     for (i in 0 until pieData.pies_media_url.size) {
-                        addView(pieData.pies_media_url[i], false)
+                        addView(pieData.pies_media_url[i], false, i)
                     }
                 }
 
@@ -140,7 +141,11 @@ class EditPieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallbac
             }
             R.id.ivRemove -> {
                 val pView = v.parent as View
-                arRemoveFiles.add(pieData.pies_media_url[llImages.indexOfChild(pView)])
+                if (llImages.indexOfChild(pView) + 1 <= pieData.pies_media_url.size) {
+                    arRemoveFiles.add(pieData.pies_media_url[llImages.indexOfChild(pView)])
+                } else {
+                    arFiles.removeAt(llImages.indexOfChild(pView))
+                }
                 llImages.removeView(pView)
 
                 AppLogger.e("tag", "arRemoveFiles++" + arRemoveFiles.size)
@@ -161,7 +166,7 @@ class EditPieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallbac
                 }
             }
             R.id.ivGallery -> {
-                if (arFiles.size <= 3) {
+                if (llImages.childCount <= 3) {
                     if (!permissionUtils!!.checkPermission(PermissionUtils.REQUEST_CAMERA_GALLERY_PERMISSION)) {
                         requestPermission(PermissionUtils.REQUEST_CODE_GALLERY_PERMISSION)
                     } else {
@@ -173,7 +178,7 @@ class EditPieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallbac
 
             }
             R.id.ivVideo -> {
-                if (arFiles.size == 0) {
+                if (llImages.childCount == 0) {
                     pickFromGallery()
                 } else {
                     sneakerError(this, "you can image or video")
@@ -275,7 +280,7 @@ class EditPieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallbac
                         result.uri.path?.let {
 
                             pickerPath = it
-                            addView(pickerPath, true)
+                            addView(pickerPath, true, llImages.childCount)
 
                         }
                     }
@@ -317,7 +322,7 @@ class EditPieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallbac
                 }
                 REQUEST_VIDEO_TRIMMER -> {
                     val uri = data!!.data
-                    if (uri != null && checkIfUriCanBeUsedForVideo(uri)) {
+                    /*if (uri != null && checkIfUriCanBeUsedForVideo(uri)) {
                         startTrimActivity(uri)
                     } else {
                         Toast.makeText(
@@ -326,7 +331,13 @@ class EditPieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallbac
                             Toast.LENGTH_SHORT
                         )
                             .show()
-                    }
+                    }*/
+                    val bitmap2 = ThumbnailUtils.createVideoThumbnail(
+                        uri?.getPath(),
+                        MediaStore.Images.Thumbnails.MINI_KIND
+                    )
+                    rlVideo.visibility = View.VISIBLE
+                    ivPreviewVideo.setImageBitmap(bitmap2)
                 }
                 201 -> {
                     loaderDialog.run()
@@ -376,16 +387,16 @@ class EditPieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallbac
         AppLogger.e("tag", "error" + p0)
     }
 
-    fun addView(pickerPath: String, isNew: Boolean) {
+    fun addView(pickerPath: String, isNew: Boolean, pos: Int) {
 
         val linearLayout = LayoutInflater.from(llImages.context)
             .inflate(R.layout.listitem_image, llImages, false) as RelativeLayout
-        if (isNew) {
-            arFiles.add(pickerPath)
-        }
+
+        arFiles.add(pickerPath)
+
         linearLayout.ivRemove.setOnClickListener(this)
         Glide.with(this).load(pickerPath).into(linearLayout.ivImage)
-        llImages.addView(linearLayout, 0)
+        llImages.addView(linearLayout, pos)
     }
 
 
@@ -397,20 +408,30 @@ class EditPieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallbac
 
             // Map is used to multipart the file using okhttp3.RequestBody
             // Multiple Images
+            var size = 0
             for (i in 0 until arFiles.size) {
-                val file = File(arFiles.get(i))
-                builder.addFormDataPart(
-                    "pie_image[]",
-                    file.getName(),
-                    RequestBody.create(MediaType.parse("multipart/form-data"), file)
-                )
+                if (!AppGlobal.containsUrl(arFiles.get(i))) {
+                    val file = File(arFiles.get(i))
+                    size++
+                    builder.addFormDataPart(
+                        "pie_image[]",
+                        file.getName(),
+                        RequestBody.create(MediaType.parse("multipart/form-data"), file)
+                    )
+                }
             }
-
-            val requestBody: MultipartBody = builder.build()
-            callApi(requestInterface.uploadPiePic(requestBody), true)
-                ?.subscribe({ onFileUpload(it) }) { onResponseFailure(it, true) }
-                ?.let { mCompositeDisposable.add(it) }
-
+            if (size != 0) {
+                val requestBody: MultipartBody = builder.build()
+                callApi(requestInterface.uploadPiePic(requestBody), true)
+                    ?.subscribe({ onFileUpload(it) }) { onResponseFailure(it, true) }
+                    ?.let { mCompositeDisposable.add(it) }
+            } else {
+                if (videoPath.isNotEmpty()) {
+                    uploadVideo()
+                } else {
+                    createPie("")
+                }
+            }
         } else {
             Toast.makeText(this, resources.getString(R.string.msg_no_internet), Toast.LENGTH_LONG).show()
         }
@@ -478,6 +499,7 @@ class EditPieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallbac
             data[getString(R.string.param_pie_id)] = pieData.id
             data[getString(R.string.param_pies_text)] = etPie.text.toString()
             data[getString(R.string.param_pies_media)] = imagePaths
+            data[getString(R.string.param_remove_medias)] = TextUtils.join(",", arRemoveFiles)
             if (videoPath.isEmpty()) {
                 data[getString(R.string.param_pies_type)] = "video"
             } else {
