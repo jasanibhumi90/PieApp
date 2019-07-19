@@ -320,6 +320,7 @@ class EditPieActivity : BaseActivity(), View.OnClickListener, ImagePickerCallbac
                     }
 
                 }
+
                 REQUEST_VIDEO_TRIMMER -> {
                     val uri = data!!.data
                     /*if (uri != null && checkIfUriCanBeUsedForVideo(uri)) {
